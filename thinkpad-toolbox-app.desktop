@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=ThinkPad ToolBox
+Comment=ThinkPad ToolBox
+Icon=thinkpad-toolbox
+Exec=thinkpad-toolbox
+Terminal=false
+Type=Application
+Categories=GTK;GNOME;Application;Utility;

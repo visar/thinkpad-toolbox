@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=ThinkPad ToolBox
+Comment=ThinkPad ToolBox
+Icon=thinkpad-toolbox
+Exec=thinkpad-toolbox
+Terminal=false
+Type=Application
+OnlyShowIn=GNOME;
+X-GNOME-Autostart-enabled=true

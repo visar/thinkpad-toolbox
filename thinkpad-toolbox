@@ -1,0 +1,310 @@
+#!/usr/bin/env python
+
+import sys
+import os
+import pygtk
+pygtk.require('2.0')
+import gtk
+import gobject
+import dbus
+import dbus.service
+import dbus.glib
+import struct
+from os import O_NONBLOCK
+from fcntl import fcntl, F_SETFL
+from struct import unpack, calcsize
+import gconf
+import appindicator
+
+
+version = '0.7'
+
+class GConf():
+  def __init__(self):
+    self.client = gconf.client_get_default()
+    if not self.client.dir_exists('/apps/thinkpad-toolbox/initstate'):
+      self.client.add_dir('/apps/thinkpad-toolbox/initstate', gconf.CLIENT_PRELOAD_NONE)
+      self.client.set_bool('/apps/thinkpad-toolbox/initstate/wlan', True)
+      self.client.set_bool('/apps/thinkpad-toolbox/initstate/wwan', True)
+      self.client.set_bool('/apps/thinkpad-toolbox/initstate/bluetooth', True)
+
+  def get_initstate(self, key):
+    try:
+      result = self.client.get_bool('/apps/thinkpad-toolbox/initstate/%s' % key)
+    except:
+      result = True
+    return result
+
+  def set_initstate(self, key, val):
+    self.client.set_bool('/apps/thinkpad-toolbox/initstate/%s' % key, val)
+
+class thinkpadToolboxDBUSService(dbus.service.Object):
+  def __init__(self):
+    bus_name = dbus.service.BusName('org.thinkpadtoolbox.service', bus=dbus.SessionBus())
+    dbus.service.Object.__init__(self, bus_name, '/org/thinkpadtoolbox/service')
+
+  @dbus.service.method('org.thinkpadtoolbox.service')
+  def gui_showhide(self):
+    app.gui_showhide(app)
+
+class toolboxApp():
+  properties = { }
+
+  rfkill_id = { }
+  rfkill_sState = { }
+  rfkill_hState = { }
+  use_radio = { }
+  radio_state = { }
+
+  RFKILL_FORMAT = 'IBBBB'
+  RFKILL_OP_ADD = 0
+  RFKILL_OP_DEL = 1
+  RFKILL_OP_CHANGE = 2
+  RFKILL_OP_CHANGE_ALL = 3
+
+  COLOR_WHITE = gtk.gdk.color_parse('white')
+  COLOR_BLACK = gtk.gdk.color_parse('black')
+  COLOR_RED = gtk.gdk.color_parse('red')
+  COLOR_DARKGREY = gtk.gdk.color_parse('#545454')
+
+  def __setattr__(self, name, value):
+    self.properties[name] = value
+
+  def __getattr__(self, name):
+    return self.properties[name]
+
+  def __init__(self):
+    self.gconf = GConf()
+    self.is_hidden = True
+    builder = gtk.Builder()
+    builder.add_from_file('/usr/share/thinkpad-toolbox/thinkpad-toolbox.glade')
+    builder.connect_signals(self)
+    widgets = builder.get_objects()
+    self.gui_prepare(widgets)
+    self.rfkill_get_all()
+    try:
+      self.rfkill_startup('wlan')
+    except:
+      pass
+    try:
+      self.rfkill_startup('wwan')
+    except:
+      pass
+    try:
+      self.rfkill_startup('bluetooth')
+    except:
+      pass
+    self.gui_update()
+
+  def rfkill_startup(self, name):
+    if self.gconf.get_initstate(name):
+      self.rfkill_set(self.rfkill_id[name], 0)
+    else:
+      self.rfkill_set(self.rfkill_id[name], 1)
+
+  def rfkill_get_states(self):
+    try:
+      fd = open('/dev/rfkill','r')
+      fcntl(fd, F_SETFL, O_NONBLOCK)
+      while True:
+        try:
+          data = unpack(self.RFKILL_FORMAT, fd.read(calcsize(self.RFKILL_FORMAT)))
+          name_fd = open('/sys/class/rfkill/rfkill' + str(data[0]) + '/name')
+          type_fd = open('/sys/class/rfkill/rfkill' + str(data[0]) + '/type')
+          name = name_fd.read().strip()
+          type = type_fd.read().strip()
+          name_fd.close()
+          type_fd.close()
+          if type == 'wlan':
+            self.rfkill_id['wlan'] = data[0]
+            self.rfkill_sState['wlan'] = data[3]
+            self.rfkill_hState['wlan'] = data[4]
+          if type == 'bluetooth' and name == 'tpacpi_bluetooth_sw':
+            self.rfkill_id['bluetooth'] = data[0]
+            self.rfkill_sState['bluetooth'] = data[3]
+            self.rfkill_hState['bluetooth'] = data[4]
+          if type == 'wwan' and name == 'tpacpi_wwan_sw':
+            self.rfkill_id['wwan'] = data[0]
+            self.rfkill_sState['wwan'] = data[3]
+            self.rfkill_hState['wwan'] = data[4]
+        except Exception, e:
+          if e.args[0] == 11:
+            break
+          else:
+            raise e
+      fd.close()
+    except:
+      pass
+
+  def rfkill_set(self, id, state):
+    buf = struct.pack(self.RFKILL_FORMAT, id, 0, self.RFKILL_OP_CHANGE, state, 0)
+    try:
+      fd = os.open('/dev/rfkill', os.O_RDWR)
+      if (os.write(fd, buf) < 8):
+        os.close(fd)
+    except:
+      pass
+
+  def rfkill_get(self, name):
+    self.use_radio[name] = False
+    self.radio_state[name] = False
+    try:
+      if self.rfkill_id[name] >= 0:
+        self.use_radio[name] = True
+      if self.rfkill_sState[name] != 1 and self.rfkill_hState[name] != 1:
+        self.radio_state[name] = True
+    except:
+      pass
+
+  def rfkill_get_all(self):
+    self.rfkill_get_states()
+    try:
+      self.rfkill_get('wlan')
+    except:
+      pass
+    try:
+      self.rfkill_get('bluetooth')
+    except:
+      pass
+    try:
+      self.rfkill_get('wwan')
+    except:
+      pass
+    self.gui_update()
+
+  def rfkill_reset(self, name):
+    self.rfkill_set(self.rfkill_id[name], not(self.rfkill_sState[name]))
+    self.gconf.set_initstate(name, self.rfkill_sState[name])
+    self.rfkill_get(name)
+    self.gui_update()
+
+  def gui_showhide(self, widget):
+    if self.is_hidden:
+      self.window.show()
+      self.is_hidden = False
+    else:
+      self.window.hide()
+      self.is_hidden = True
+    self.populatemenu()
+
+  def gui_prepare(self, widgets):
+    for widget in widgets:
+      try:
+        exec('self.%s = widget' % gtk.Buildable.get_name(widget))
+      except:
+        pass
+    self.window.set_keep_above(True);
+
+  def gui_update(self):
+    self.gui_set_radio_state('wlan')
+    self.gui_set_radio_state('bluetooth')
+    self.gui_set_radio_state('wwan')
+
+  def gui_set_radio_state(self, name):
+    exec('radio_left = self.%s_left' % name)
+    exec('radio_right = self.%s_right' % name)
+    exec('txt_status_radio = self.txt_status_%s' % name)
+    exec('txt_change_radio = self.txt_change_%s' % name)
+    exec('txt_radio = self.txt_%s' % name)
+    exec('img_radio = self.img_%s' % name)
+    if self.use_radio[name]:
+      radio_left.set_sensitive(True)
+      radio_right.set_sensitive(True)
+      txt_status_radio.set_sensitive(True)
+      if self.radio_state[name]:
+        txt_status_radio.set_text('On')
+        txt_change_radio.set_text('Turn Off')
+        img_radio.set_from_stock('gtk-disconnect', gtk.ICON_SIZE_BUTTON)
+        txt_status_radio.modify_fg(gtk.STATE_NORMAL, self.COLOR_WHITE)
+        txt_change_radio.modify_fg(gtk.STATE_NORMAL, self.COLOR_WHITE)
+        txt_radio.modify_fg(gtk.STATE_NORMAL, self.COLOR_WHITE)
+      else:
+        txt_status_radio.set_text('Off')
+        txt_change_radio.set_text('Turn On')
+        img_radio.set_from_stock('gtk-connect', gtk.ICON_SIZE_BUTTON)
+        txt_status_radio.modify_fg(gtk.STATE_NORMAL, self.COLOR_RED)
+        txt_change_radio.modify_fg(gtk.STATE_NORMAL, self.COLOR_RED)
+        txt_radio.modify_fg(gtk.STATE_NORMAL, self.COLOR_RED)
+    else:
+      radio_left.set_sensitive(False)
+      radio_right.set_sensitive(False)
+      txt_status_radio.set_sensitive(False)
+      txt_status_radio.set_text('N/A')
+      txt_change_radio.set_text('N/A')
+
+  def gui_aboutbox(self, event, data=None):
+    authors = ['Stefan Saraev <seo@link.bg>']
+    about = gtk.AboutDialog()
+    about.set_name('ThinkPad ToolBox')
+    about.set_version(version)
+    about.set_copyright('(C) 2009 Stefan Saraev')
+    about.set_authors(authors)
+    about.run()
+    about.destroy()
+
+  def gui_refresh(self):
+    if not self.is_hidden:
+      self.rfkill_get_all()
+    return True
+
+  def on_btn_resetstate_clicked(self, widget):
+    name = gtk.Buildable.get_name(widget)
+    self.rfkill_reset(name)
+
+  def on_window_key_press_event(self, widget, event):
+    if event.hardware_keycode == 9:
+      self.window.hide()
+      self.is_hidden = True
+    self.populatemenu()
+    if event.hardware_keycode == 10:
+      self.rfkill_reset('wlan')
+    if event.hardware_keycode == 11:
+      self.rfkill_reset('bluetooth')
+    if event.hardware_keycode == 12:
+      self.rfkill_reset('wwan')
+
+  def on_widget_realize(self, widget, data=None):
+    widget.modify_bg(gtk.STATE_NORMAL, self.COLOR_BLACK)
+    widget.modify_fg(gtk.STATE_NORMAL, self.COLOR_WHITE)
+    widget.modify_bg(gtk.STATE_INSENSITIVE, self.COLOR_BLACK)
+    if type(widget) == gtk.HSeparator:
+      widget.modify_bg(gtk.STATE_NORMAL, self.COLOR_DARKGREY)
+      widget.modify_bg(gtk.STATE_NORMAL, self.COLOR_DARKGREY)
+
+  def gtk_main_quit(self, window, data=None):
+    gtk.main_quit()
+
+  def gui_showhide_menu(self, ind):
+    self.gui_showhide(self)
+
+  def populatemenu(self):
+    menu = gtk.Menu()
+    menuitem = gtk.MenuItem()
+    if self.is_hidden:
+      menuitem.add(gtk.Label("Show ToolBox"))
+    else:
+      menuitem.add(gtk.Label("Hide ToolBox"))
+    menuitem.connect('activate', self.gui_showhide_menu)
+    menu.append(menuitem)
+    menuitem = gtk.MenuItem()
+    menuitem.add(gtk.Label("Exit"))
+    menuitem.connect('activate', self.gtk_main_quit)
+    menu.append(menuitem)
+    menu.show_all()
+    self.indicator.set_menu(menu)
+
+if __name__ == '__main__':
+  ind = appindicator.Indicator ("thinkpad-toolbox",
+    "thinkpad-toolbox",
+    appindicator.CATEGORY_APPLICATION_STATUS)
+  ind.set_status (appindicator.STATUS_ACTIVE)
+  ind.set_attention_icon ("thinkpad-toolbox")
+
+  app = toolboxApp()
+  app.indicator = ind
+  app.populatemenu()
+
+  gobject.timeout_add(2*1000, app.gui_refresh)
+  thinkpadToolboxDBUSService = thinkpadToolboxDBUSService()
+  gtk.main()
+

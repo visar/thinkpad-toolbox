@@ -1,0 +1,13 @@
+Source: thinkpad-toolbox
+Section: misc
+Priority: extra
+Maintainer: Stefan Saraev <seo@link.bg>
+Build-Depends: debhelper (>= 7)
+Standards-Version: 3.8.1
+
+Package: thinkpad-toolbox
+Architecture: all
+Depends: gnome-applets, acpi-support, python-gconf, python-appindicator
+Description: ThinkPad ToolBox
+ ThinkPad ToolBox
+ 

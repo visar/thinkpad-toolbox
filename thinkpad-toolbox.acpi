@@ -1,0 +1,11 @@
+#!/bin/sh
+LOGIN=$(/bin/ps -ouser -p $(pidof gnome-session) --no-headers)
+PID=$(/usr/bin/pgrep -u $LOGIN gnome-session)
+DBUS_SESSION_BUS_ADDRESS=$(/bin/grep -z DBUS_SESSION_BUS_ADDRESS /proc/$PID/environ | 
+	/bin/sed -e 's/DBUS_SESSION_BUS_ADDRESS=//')
+DBUS_SESSION_BUS_ADDRESS=$DBUS_SESSION_BUS_ADDRESS \
+	su $LOGIN -c "dbus-send --session \
+		--dest=org.thinkpadtoolbox.service \
+		--type=method_call \
+		/org/thinkpadtoolbox/service \
+		org.thinkpadtoolbox.service.gui_showhide"

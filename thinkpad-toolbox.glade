@@ -1,0 +1,459 @@
+<?xml version="1.0"?>
+<interface>
+  <requires lib="gtk+" version="2.16"/>
+  <!-- interface-naming-policy project-wide -->
+  <object class="GtkWindow" id="window">
+    <property name="width_request">480</property>
+    <property name="height_request">240</property>
+    <property name="receives_default">True</property>
+    <property name="resizable">False</property>
+    <property name="window_position">center</property>
+    <property name="type_hint">notification</property>
+    <property name="skip_taskbar_hint">True</property>
+    <property name="skip_pager_hint">True</property>
+    <property name="urgency_hint">True</property>
+    <property name="decorated">False</property>
+    <property name="opacity">0.90000000000000002</property>
+    <signal name="key_press_event" handler="on_window_key_press_event"/>
+    <signal name="realize" handler="on_widget_realize"/>
+    <child>
+      <object class="GtkVBox" id="vbox1">
+        <property name="visible">True</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkHBox" id="toparea">
+            <property name="visible">True</property>
+            <child>
+              <object class="GtkLabel" id="title">
+                <property name="visible">True</property>
+                <property name="yalign">1</property>
+                <property name="xpad">5</property>
+                <property name="ypad">5</property>
+                <property name="label" translatable="yes">Change Power Settings of Wireless Radios</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
+                <signal name="realize" handler="on_widget_realize"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="padding">10</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkImage" id="logo">
+                <property name="visible">True</property>
+                <property name="xpad">5</property>
+                <property name="ypad">5</property>
+                <property name="icon_name">thinkpad-toolbox</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="padding">10</property>
+                <property name="pack_type">end</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="padding">2</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkHSeparator" id="sep_t">
+            <property name="visible">True</property>
+            <signal name="realize" handler="on_widget_realize"/>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="padding">1</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkTable" id="apparea">
+            <property name="visible">True</property>
+            <property name="n_rows">3</property>
+            <property name="n_columns">3</property>
+            <child>
+              <object class="GtkLabel" id="txt_status_wlan">
+                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <property name="xpad">10</property>
+                <property name="label" translatable="yes">On</property>
+                <property name="single_line_mode">True</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="right_attach">2</property>
+                <property name="x_options"></property>
+                <property name="x_padding">10</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="txt_status_bluetooth">
+                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <property name="xpad">10</property>
+                <property name="label" translatable="yes">On</property>
+                <property name="single_line_mode">True</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="right_attach">2</property>
+                <property name="top_attach">1</property>
+                <property name="bottom_attach">2</property>
+                <property name="x_options"></property>
+                <property name="x_padding">10</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="txt_status_wwan">
+                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <property name="xpad">10</property>
+                <property name="label" translatable="yes">On</property>
+                <property name="single_line_mode">True</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="right_attach">2</property>
+                <property name="top_attach">2</property>
+                <property name="bottom_attach">3</property>
+                <property name="x_options"></property>
+                <property name="x_padding">10</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkHBox" id="wlan_left">
+                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <child>
+                  <object class="GtkImage" id="ico_wlan">
+                    <property name="visible">True</property>
+                    <property name="xpad">10</property>
+                    <property name="icon_name">network-wireless</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">False</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="txt_wlan">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">802.11 Wireless Radio</property>
+                    <property name="single_line_mode">True</property>
+                    <attributes>
+                      <attribute name="weight" value="bold"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkHBox" id="bluetooth_left">
+                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <child>
+                  <object class="GtkImage" id="ico_bluetooth">
+                    <property name="visible">True</property>
+                    <property name="xpad">10</property>
+                    <property name="icon_name">bluetooth-active</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">False</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="txt_bluetooth">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">Bluetooth</property>
+                    <property name="single_line_mode">True</property>
+                    <attributes>
+                      <attribute name="weight" value="bold"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="top_attach">1</property>
+                <property name="bottom_attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkHBox" id="wwan_left">
+                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <child>
+                  <object class="GtkImage" id="ico_wwan">
+                    <property name="visible">True</property>
+                    <property name="xpad">10</property>
+                    <property name="icon_name">gnome-dev-wavelan</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">False</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="txt_wwan">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">Wireless WAN</property>
+                    <property name="single_line_mode">True</property>
+                    <attributes>
+                      <attribute name="weight" value="bold"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="top_attach">2</property>
+                <property name="bottom_attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkHBox" id="wlan_right">
+                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <child>
+                  <object class="GtkButton" id="wlan">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">False</property>
+                    <property name="image">img_wlan</property>
+                    <property name="focus_on_click">False</property>
+                    <signal name="clicked" handler="on_btn_resetstate_clicked"/>
+                    <signal name="realize" handler="on_widget_realize"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">False</property>
+                    <property name="padding">10</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="txt_change_wlan">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">Radio Off</property>
+                    <property name="single_line_mode">True</property>
+                    <attributes>
+                      <attribute name="weight" value="bold"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="right_attach">3</property>
+                <property name="x_padding">10</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkHBox" id="bluetooth_right">
+                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <child>
+                  <object class="GtkButton" id="bluetooth">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">False</property>
+                    <property name="image">img_bluetooth</property>
+                    <property name="focus_on_click">False</property>
+                    <signal name="clicked" handler="on_btn_resetstate_clicked"/>
+                    <signal name="realize" handler="on_widget_realize"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">False</property>
+                    <property name="padding">10</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="txt_change_bluetooth">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">Radio Off</property>
+                    <property name="single_line_mode">True</property>
+                    <attributes>
+                      <attribute name="weight" value="bold"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="right_attach">3</property>
+                <property name="top_attach">1</property>
+                <property name="bottom_attach">2</property>
+                <property name="x_padding">10</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkHBox" id="wwan_right">
+                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <child>
+                  <object class="GtkButton" id="wwan">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">False</property>
+                    <property name="image">img_wwan</property>
+                    <property name="focus_on_click">False</property>
+                    <signal name="clicked" handler="on_btn_resetstate_clicked"/>
+                    <signal name="realize" handler="on_widget_realize"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">False</property>
+                    <property name="padding">10</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="txt_change_wwan">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">Radio Off</property>
+                    <property name="single_line_mode">True</property>
+                    <attributes>
+                      <attribute name="weight" value="bold"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="right_attach">3</property>
+                <property name="top_attach">2</property>
+                <property name="bottom_attach">3</property>
+                <property name="x_padding">10</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkFixed" id="fixed1">
+            <property name="visible">True</property>
+          </object>
+          <packing>
+            <property name="padding">2</property>
+            <property name="position">4</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkHSeparator" id="sep_b">
+            <property name="visible">True</property>
+            <signal name="realize" handler="on_widget_realize"/>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="padding">1</property>
+            <property name="position">5</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkHBox" id="bottomarea">
+            <property name="visible">True</property>
+            <child>
+              <object class="GtkFixed" id="fixed2">
+                <property name="visible">True</property>
+              </object>
+              <packing>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="quit">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="receives_default">False</property>
+                <property name="image">img_quit</property>
+                <signal name="clicked" handler="gui_showhide"/>
+                <signal name="realize" handler="on_widget_realize"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="padding">10</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="padding">2</property>
+            <property name="pack_type">end</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkImage" id="img_wlan">
+    <property name="visible">True</property>
+    <property name="stock">gtk-disconnect</property>
+  </object>
+  <object class="GtkImage" id="img_bluetooth">
+    <property name="visible">True</property>
+    <property name="stock">gtk-disconnect</property>
+  </object>
+  <object class="GtkImage" id="img_wwan">
+    <property name="visible">True</property>
+    <property name="stock">gtk-disconnect</property>
+  </object>
+  <object class="GtkImage" id="img_quit">
+    <property name="visible">True</property>
+    <property name="stock">gtk-quit</property>
+  </object>
+</interface>
